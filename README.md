@@ -32,10 +32,10 @@ Unity 游戏开发工具包，提供常用的扩展方法、对象池、脚本�
 ```csharp
 public class Player : GameScript
 {
-    [FindRef("Weapon")] private Transform _weapon;      // 按路径查找
-    [GetInChildren] private Animator _animator;         // 从子节点获取
-    [GetInParent] private Canvas _canvas;               // 从父节点获取
-    [Required] private Rigidbody _rb;                   // 必须存在的引用
+    [SerializeField, FindRef("Weapon")] private Transform _weapon;      // 按路径查找
+    [SerializeField, GetInChildren] private Animator _animator;         // 从子节点获取
+    [SerializeField, GetInParent] private Canvas _canvas;               // 从父节点获取
+    [SerializeField, Required] private Rigidbody _rb;                   // 必须存在的引用
 
     protected override void OnScriptInitialize()
     {
