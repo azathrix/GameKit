@@ -38,7 +38,7 @@ namespace Azathrix.GameKit.Editor
             FindReference();
         }
 #else
-        protected override void OnEnable()
+        protected virtual void OnEnable()
         {
             FindReference();
         }

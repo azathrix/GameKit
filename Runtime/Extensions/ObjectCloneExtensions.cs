@@ -1,7 +1,10 @@
 using System;
-using Sirenix.Serialization;
 using UnityEngine;
 using Object = UnityEngine.Object;
+
+#if ODIN_INSPECTOR
+using Sirenix.Serialization;
+#endif
 
 namespace Azathrix.GameKit.Runtime.Extensions
 {
@@ -58,6 +61,7 @@ namespace Azathrix.GameKit.Runtime.Extensions
             JsonUtility.FromJsonOverwrite(json, target);
         }
 
+#if ODIN_INSPECTOR
         /// <summary>
         /// 使用 Odin 序列化克隆对象（深拷贝）
         /// </summary>
@@ -74,6 +78,7 @@ namespace Azathrix.GameKit.Runtime.Extensions
                 return default;
             }
         }
+#endif
 
         #endregion
     }
