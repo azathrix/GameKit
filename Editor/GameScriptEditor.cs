@@ -7,8 +7,13 @@ using System.Text.RegularExpressions;
 using Azathrix.GameKit.Runtime.Behaviours;
 using Azathrix.GameKit.Runtime.Behaviours.Attributes;
 using Azathrix.GameKit.Runtime.Behaviours.Enums;
+
 using UnityEditor;
 using UnityEngine;
+
+#if ODIN_INSPECTOR 
+using Sirenix.OdinInspector.Editor;
+#endif
 
 namespace Azathrix.GameKit.Editor
 {
@@ -16,15 +21,28 @@ namespace Azathrix.GameKit.Editor
     /// GameScript 编辑器扩展，提供自动引用赋值功能
     /// </summary>
     [CustomEditor(typeof(GameScript), true)]
-    public class GameScriptEditor : UnityEditor.Editor
+    public class GameScriptEditor :
+#if ODIN_INSPECTOR
+        OdinEditor
+#else
+        UnityEditor.Editor
+#endif
     {
         private List<Transform> _childCache;
         private List<(FieldInfo field, RequiredAttribute attr)> _requiredFields;
 
-        private void OnEnable()
+#if ODIN_INSPECTOR
+        protected override void OnEnable()
+        {
+            base.OnEnable();
+            FindReference();
+        }
+#else
+        protected override void OnEnable()
         {
             FindReference();
         }
+#endif
 
         public override void OnInspectorGUI()
         {
@@ -42,6 +60,7 @@ namespace Azathrix.GameKit.Editor
                     }
                 }
             }
+
             base.OnInspectorGUI();
         }
 
@@ -107,7 +126,7 @@ namespace Azathrix.GameKit.Editor
 
             if (getInChildrenAttr != null)
                 return TryAssignByGetInChildren(script, field, getInChildrenAttr, autoCreateAttr);
- 
+
             if (getInParentAttr != null)
                 return TryAssignByGetInParent(script, field, getInParentAttr);
 
@@ -120,7 +139,8 @@ namespace Azathrix.GameKit.Editor
             return TryAssignByName(script, field, autoCreateAttr);
         }
 
-        private bool TryAssignByGetInChildren(GameScript script, FieldInfo field, GetInChildrenAttribute attr, AutoCreateAttribute autoCreate)
+        private bool TryAssignByGetInChildren(GameScript script, FieldInfo field, GetInChildrenAttribute attr,
+            AutoCreateAttribute autoCreate)
         {
             var (isCollection, elementType) = GetCollectionInfo(field.FieldType);
 
@@ -166,10 +186,12 @@ namespace Azathrix.GameKit.Editor
                 field.SetValue(script, component);
                 return true;
             }
+
             return false;
         }
 
-        private bool TryAssignByAnyRef(GameScript script, FieldInfo field, AnyRefAttribute attr, AutoCreateAttribute autoCreate)
+        private bool TryAssignByAnyRef(GameScript script, FieldInfo field, AnyRefAttribute attr,
+            AutoCreateAttribute autoCreate)
         {
             if ((attr.Mode & SearchIncludeMode.Self) != 0)
             {
@@ -189,7 +211,8 @@ namespace Azathrix.GameKit.Editor
             return false;
         }
 
-        private bool TryAssignByFindRef(GameScript script, FieldInfo field, FindRefAttribute attr, AutoCreateAttribute autoCreate)
+        private bool TryAssignByFindRef(GameScript script, FieldInfo field, FindRefAttribute attr,
+            AutoCreateAttribute autoCreate)
         {
             var path = attr.Path;
             if (string.IsNullOrEmpty(path)) return false;
@@ -241,7 +264,8 @@ namespace Azathrix.GameKit.Editor
             return TryAssignFromTransform(script, field, target, autoCreate);
         }
 
-        private bool TryAssignFromTransform(GameScript script, FieldInfo field, Transform target, AutoCreateAttribute autoCreate)
+        private bool TryAssignFromTransform(GameScript script, FieldInfo field, Transform target,
+            AutoCreateAttribute autoCreate)
         {
             if (target.gameObject.hideFlags != HideFlags.None) return false;
 
@@ -281,6 +305,7 @@ namespace Azathrix.GameKit.Editor
                 field.SetValue(script, component);
                 return true;
             }
+
             return false;
         }
 
@@ -300,7 +325,7 @@ namespace Azathrix.GameKit.Editor
 
             if (fieldType.IsGenericType && fieldType.GetGenericTypeDefinition() == typeof(List<>))
             {
-                var list = (IList)Activator.CreateInstance(fieldType);
+                var list = (IList) Activator.CreateInstance(fieldType);
                 foreach (var comp in components)
                     list.Add(comp);
                 field.SetValue(script, list);
@@ -328,6 +353,7 @@ namespace Azathrix.GameKit.Editor
                 var comp = parent.GetChild(i).GetComponentInChildren(type, true);
                 if (comp != null) return comp;
             }
+
             return null;
         }
 
@@ -358,6 +384,7 @@ namespace Azathrix.GameKit.Editor
                 if (child.name.ToLower() == name)
                     return child;
             }
+
             return null;
         }
 
@@ -371,6 +398,7 @@ namespace Azathrix.GameKit.Editor
                 path = parent.name + "/" + path;
                 parent = parent.parent;
             }
+
             return path;
         }
 
